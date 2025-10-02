@@ -8,6 +8,52 @@ A complete out-of-the-box Dockerized web IDE environment with AI code completion
 - At least 4GB of RAM available for containers
 - Ports 8080, 5000, and 3000-3005 available
 
+## Documentation
+
+- **[QUICKSTART.md](QUICKSTART.md)** - Get started in 5 minutes
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture and design
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Production deployment guide
+- **README.md** (this file) - Complete reference guide
+
+## Folder Structure
+
+```
+mono-web-ide/
+├── app-code/                  # All user projects (persistent volume)
+│   ├── app1/                  # Example React application
+│   │   ├── public/
+│   │   ├── src/
+│   │   ├── package.json
+│   │   └── README.md
+│   ├── app2/                  # Example Express API
+│   │   ├── index.js
+│   │   ├── package.json
+│   │   └── README.md
+│   └── README.md              # Instructions for creating apps
+│
+├── extensions/ai-completion/  # AI completion extension (reference)
+│   └── README.md              # Extension configuration guide
+│
+├── scripts/                   # Helper scripts
+│   ├── start-app1.sh         # Start React app
+│   ├── start-app2.sh         # Start Express API
+│   ├── start-all-apps.sh     # Start all apps in tmux
+│   ├── test-dyad-integration.sh  # Integration tests
+│   └── README.md              # Scripts documentation
+│
+├── docker-compose.yml         # Docker Compose configuration
+├── Dockerfile-codeserver      # Code Server container definition
+├── Dockerfile-dyad-server     # Dyad test server container
+├── dyad-test-server.js        # Dyad test server implementation
+├── setup.sh                   # Setup script (run first)
+├── .env.example               # Environment variables template
+├── .env                       # Your environment variables (created by setup)
+├── QUICKSTART.md              # Quick start guide
+├── ARCHITECTURE.md            # Architecture documentation
+├── DEPLOYMENT.md              # Production deployment guide
+└── README.md                  # This file
+```
+
 ## Quick Start
 
 First, run the setup script to prepare the environment:
@@ -51,22 +97,6 @@ docker compose down
 - 🔧 **Pre-configured** - Node.js, npm, git, and build tools included
 - 🚀 **Multiple Preview Ports** - Run several dev servers at once
 
-## Architecture
-
-```
-mono-web-ide/
-├── app-code/              # Your projects (persistent volume)
-│   ├── app1/             # Example React app
-│   ├── app2/             # Example Node.js app
-│   └── README.md
-├── extensions/ai-completion/  # VS Code AI completion extension
-├── scripts/              # Helper scripts
-├── docker-compose.yml    # Docker Compose configuration
-├── Dockerfile-codeserver # Code Server container
-├── Dockerfile-dyad-server # Dyad test server container
-└── README.md            # This file
-```
-
 ## Services
 
 ### Code Server (Port 8080)
@@ -74,6 +104,9 @@ mono-web-ide/
 - Access: http://localhost:8080
 - Default password: `coder` (can be changed via PASSWORD env var)
 - Persistent workspace mounted at `/home/coder/project/app-code`
+- Node.js, npm, git, and build tools pre-installed
+
+For detailed architecture, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ### Dyad Test Server (Port 5000)
 - Mock AI completion backend
