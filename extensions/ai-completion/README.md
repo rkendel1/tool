@@ -94,6 +94,21 @@ Add the following to your VS Code `settings.json`:
 
 ## Backend Configuration
 
+### Using Dyad Backend (Recommended)
+
+The extension includes full Dyad integration. See [DYAD_INTEGRATION.md](DYAD_INTEGRATION.md) for detailed setup instructions.
+
+Quick start:
+```bash
+# Start the Dyad test server
+node dyad-test-server.js
+
+# Start the Dyad backend adapter
+DYAD_URL=http://localhost:3000 node dyad-backend.js
+
+# Configure VS Code to use http://localhost:8080/api/completions
+```
+
 ### Using Dummy Backend (Development)
 
 For testing purposes, you can use a simple mock server:
