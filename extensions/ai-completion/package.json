@@ -49,6 +49,11 @@
           "default": "",
           "description": "Dyad user ID for collaborative features (future integration hook)"
         },
+        "aiCompletion.dyadModel": {
+          "type": "string",
+          "default": "dyad-default",
+          "description": "Dyad model to use for completions (e.g., dyad-default, dyad-large)"
+        },
         "aiCompletion.showInlinePrompt": {
           "type": "boolean",
           "default": true,
