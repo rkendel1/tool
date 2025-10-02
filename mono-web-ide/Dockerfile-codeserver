@@ -1,0 +1,33 @@
+# Dockerfile for Code Server with Node.js and development tools
+FROM codercom/code-server:latest
+
+USER root
+
+# Install Node.js, npm, git and other development tools
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    wget \
+    build-essential \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g npm@latest \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create working directory
+RUN mkdir -p /home/coder/project && chown -R coder:coder /home/coder/project
+
+# Switch to coder user
+USER coder
+
+# Set working directory
+WORKDIR /home/coder/project
+
+# Expose Code Server port
+EXPOSE 8080
+
+# Additional ports for multiple app previews
+EXPOSE 3000 3001 3002 3003 3004 3005
+
+# Start code-server
+ENTRYPOINT ["/usr/bin/entrypoint.sh", "--bind-addr", "0.0.0.0:8080", "."]

@@ -1,0 +1,42 @@
+# Environment variables
+.env
+
+# Node modules in app-code
+app-code/*/node_modules/
+app-code/*/.npm/
+app-code/*/.cache/
+
+# Build outputs
+app-code/*/build/
+app-code/*/dist/
+app-code/*/.next/
+app-code/*/out/
+
+# Logs
+app-code/*/*.log
+app-code/*/npm-debug.log*
+app-code/*/yarn-debug.log*
+app-code/*/yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test coverage
+app-code/*/coverage/
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+
+# Docker volumes (if created locally)
+volumes/
+data/

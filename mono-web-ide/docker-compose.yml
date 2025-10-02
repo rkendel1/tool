@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # Code Server - Web-based IDE
+  code-server:
+    build:
+      context: ..
+      dockerfile: mono-web-ide/Dockerfile-codeserver
+    container_name: mono-web-ide-codeserver
+    ports:
+      - "8080:8080"    # Code Server web interface
+      - "3000:3000"    # App preview port 1
+      - "3001:3001"    # App preview port 2
+      - "3002:3002"    # App preview port 3
+      - "3003:3003"    # App preview port 4
+      - "3004:3004"    # App preview port 5
+      - "3005:3005"    # App preview port 6
+    environment:
+      # Dyad backend configuration
+      - DYAD_BACKEND_URL=http://dyad-server:5000/completion
+      - API_KEY=${API_KEY:-}
+      - AI_MODEL=${AI_MODEL:-dyad-default}
+      - SESSION_ID=${SESSION_ID:-default-session}
+      - USER_ID=${USER_ID:-default-user}
+      # Code Server configuration
+      - PASSWORD=${PASSWORD:-coder}
+    volumes:
+      # Persistent volume for user projects
+      - ./app-code:/home/coder/project/app-code
+      # Mount AI completion extension (read-only for reference)
+      - ../extensions/ai-completion:/home/coder/project/extensions/ai-completion:ro
+    depends_on:
+      dyad-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - mono-web-ide
+
+  # Dyad Test Server - Mock AI completion backend
+  dyad-server:
+    build:
+      context: ..
+      dockerfile: mono-web-ide/Dockerfile-dyad-server
+    container_name: mono-web-ide-dyad-server
+    ports:
+      - "5000:5000"    # Dyad API port
+    environment:
+      - PORT=5000
+      - RESPONSE_DELAY=100
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - mono-web-ide
+
+networks:
+  mono-web-ide:
+    driver: bridge
+
+volumes:
+  app-code:
+    driver: local
