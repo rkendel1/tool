@@ -2,13 +2,35 @@
 
 A complete out-of-the-box Dockerized web IDE environment with AI code completion capabilities using Code Server and Dyad integration.
 
+## Prerequisites
+
+- Docker and Docker Compose v2 installed
+- At least 4GB of RAM available for containers
+- Ports 8080, 5000, and 3000-3005 available
+
 ## Quick Start
 
-Start the entire environment with a single command:
+First, run the setup script to prepare the environment:
 
 ```bash
 cd mono-web-ide
+./setup.sh
+```
+
+This will:
+- Copy required files (dyad-test-server.js) 
+- Create a .env file from .env.example
+
+Start the entire environment:
+
+```bash
 docker compose up
+```
+
+Or run in detached mode:
+
+```bash
+docker compose up -d
 ```
 
 Stop the environment:
@@ -16,6 +38,8 @@ Stop the environment:
 ```bash
 docker compose down
 ```
+
+**Note:** The first build may take 5-10 minutes as it needs to build the Code Server container with Node.js and development tools.
 
 ## Features
 
@@ -65,8 +89,16 @@ mono-web-ide/
 
 ### 1. Start the Environment
 
+First, run the setup script (only needed once):
+
 ```bash
 cd mono-web-ide
+./setup.sh
+```
+
+Then start the services:
+
+```bash
 docker compose up -d
 ```
 
