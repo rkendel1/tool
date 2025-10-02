@@ -1,0 +1,34 @@
+# Dockerfile for Auth Service
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY auth-package.json package.json
+
+# Install dependencies
+RUN npm install --production
+
+# Copy the auth service file
+COPY auth-service.js .
+
+# Environment variables with defaults
+ENV PORT=4000
+ENV JWT_SECRET=your-secret-key-change-in-production
+ENV JWT_EXPIRES_IN=24h
+ENV POSTGRES_HOST=postgres
+ENV POSTGRES_PORT=5432
+ENV POSTGRES_DB=devdb
+ENV POSTGRES_USER=devuser
+ENV POSTGRES_PASSWORD=devpass
+
+# Expose the API port
+EXPOSE 4000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:4000/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); })" || exit 1
+
+# Run the auth service
+CMD ["node", "auth-service.js"]

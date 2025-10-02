@@ -114,6 +114,49 @@ For detailed architecture, see [ARCHITECTURE.md](ARCHITECTURE.md).
 - Drop-in replacement for production Dyad instance
 - Health check: http://localhost:5000/health
 
+### PostgreSQL 15 (Port 5432)
+- Full-featured relational database
+- Access: localhost:5432
+- Default credentials:
+  - Database: `devdb`
+  - Username: `devuser`
+  - Password: `devpass`
+- Persistent storage with volume `postgres-data`
+- Pre-seeded with sample data
+- Health checks enabled
+
+### pgAdmin 4 (Port 5050)
+- Web-based PostgreSQL GUI
+- Access: http://localhost:5050
+- Default credentials:
+  - Email: `admin@example.com`
+  - Password: `admin`
+- Pre-configured connection to PostgreSQL
+- Persistent settings with volume `pgadmin-data`
+
+### Auth Service (Port 4000)
+- JWT-based authentication service
+- Access: http://localhost:4000
+- Endpoints:
+  - POST /api/auth/register - Register new user
+  - POST /api/auth/login - Login and get JWT token
+  - POST /api/auth/verify - Verify JWT token
+  - GET /api/auth/me - Get current user
+  - POST /api/auth/logout - Logout (client-side token removal)
+- Default users:
+  - Username: `admin`, Password: `admin123`
+  - Username: `demo`, Password: `demo123`
+- Database-backed user storage
+- Health check: http://localhost:4000/health
+
+### Redis (Port 6379)
+- In-memory data store
+- Access: localhost:6379
+- Optional password protection (configured via REDIS_PASSWORD)
+- Persistent storage with volume `redis-data`
+- Use for caching, session storage, or async jobs
+- Health checks enabled
+
 ### App Preview Ports
 - Port 3000-3005: Available for running multiple dev servers
 - Example: `npm run dev` in app1, `npm start` in app2
@@ -287,6 +330,131 @@ The extension is pre-configured with:
 - Model: dyad-default (configurable via AI_MODEL env var)
 - Session tracking enabled
 
+## Database Integration
+
+### Connecting to PostgreSQL
+
+The PostgreSQL database is automatically available to all apps running in Code Server.
+
+**Connection Details:**
+```javascript
+const { Pool } = require('pg');
+
+const pool = new Pool({
+  host: 'postgres',      // or 'localhost' from host machine
+  port: 5432,
+  database: 'devdb',
+  user: 'devuser',
+  password: 'devpass',
+});
+```
+
+**Environment Variables (for apps):**
+```env
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=devdb
+POSTGRES_USER=devuser
+POSTGRES_PASSWORD=devpass
+```
+
+### Using pgAdmin
+
+1. Open http://localhost:5050 in your browser
+2. Login with:
+   - Email: `admin@example.com`
+   - Password: `admin`
+3. The Postgres server is pre-configured and ready to use
+4. Browse tables, run queries, and manage your database
+
+### Sample Data
+
+The database is pre-seeded with sample data:
+- `users` table - For authentication (managed by auth service)
+- `items` table - Sample data for testing
+- `sessions` table - For session management
+
+To view sample data:
+```sql
+-- In pgAdmin or any SQL client
+SELECT * FROM items;
+SELECT * FROM users;
+```
+
+## Authentication Integration
+
+### Using the Auth Service
+
+The auth service provides JWT-based authentication with endpoints for:
+- User registration
+- Login/logout
+- Token verification
+- User profile
+
+**Example: Register a new user**
+```bash
+curl -X POST http://localhost:4000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "newuser",
+    "email": "user@example.com",
+    "password": "secure123"
+  }'
+```
+
+**Example: Login**
+```bash
+curl -X POST http://localhost:4000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "demo",
+    "password": "demo123"
+  }'
+```
+
+This returns a JWT token that you can use for authenticated requests.
+
+**Example: Using the token**
+```bash
+curl http://localhost:4000/api/auth/me \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Default Users
+
+Two users are pre-created for testing:
+- **Admin**: username: `admin`, password: `admin123`
+- **Demo**: username: `demo`, password: `demo123`
+
+### Integrating Auth in Your Apps
+
+See `app-code/app2/index-with-db.js` for a complete example of:
+- Database integration with PostgreSQL
+- Auth service integration with JWT verification
+- Protected endpoints
+- CRUD operations with database
+
+## Redis Integration
+
+Redis is available for caching, session storage, or async job queues.
+
+**Connection Details:**
+```javascript
+const redis = require('redis');
+
+const client = redis.createClient({
+  host: 'redis',    // or 'localhost' from host machine
+  port: 6379,
+  password: '',     // Set REDIS_PASSWORD in .env for production
+});
+```
+
+**Common Use Cases:**
+- Session storage
+- Caching API responses
+- Rate limiting
+- Background job queues with Bull or similar
+
 ## Troubleshooting
 
 ### Code Server Not Starting
@@ -354,16 +522,110 @@ curl http://localhost:8080/healthz
 
 # Dyad Server health
 curl http://localhost:5000/health
+
+# PostgreSQL health
+docker compose exec postgres pg_isready -U devuser -d devdb
+
+# Auth Service health
+curl http://localhost:4000/health
+
+# Redis health
+docker compose exec redis redis-cli ping
+```
+
+### Database Troubleshooting
+
+**Can't connect to database:**
+```bash
+# Check if Postgres is running
+docker compose ps postgres
+
+# Check Postgres logs
+docker compose logs postgres
+
+# Test connection from Code Server
+docker compose exec code-server psql -h postgres -U devuser -d devdb -c "SELECT 1"
+```
+
+**Database permission errors:**
+```bash
+# Reset database (WARNING: deletes all data)
+docker compose down -v
+docker compose up -d
+```
+
+**pgAdmin not loading:**
+```bash
+# Check pgAdmin logs
+docker compose logs pgadmin
+
+# Restart pgAdmin
+docker compose restart pgadmin
+```
+
+### Auth Service Troubleshooting
+
+**Can't login/register:**
+```bash
+# Check auth service logs
+docker compose logs auth-service
+
+# Test auth service health
+curl http://localhost:4000/health
+
+# Verify database connection
+docker compose exec auth-service node -e "const {Pool}=require('pg'); new Pool({host:'postgres',database:'devdb',user:'devuser',password:'devpass'}).query('SELECT 1').then(()=>console.log('OK')).catch(e=>console.log('ERROR',e.message))"
+```
+
+### Redis Troubleshooting
+
+**Redis connection issues:**
+```bash
+# Check Redis logs
+docker compose logs redis
+
+# Test Redis connection
+docker compose exec redis redis-cli ping
+
+# Check if password is required
+docker compose exec redis redis-cli -a "" ping
 ```
 
 ## Data Persistence
 
-All your code in the `app-code` directory is persisted on the host machine. This means:
+All data is persisted in Docker volumes and host directories:
 
-- ✅ Code survives container restarts
-- ✅ Safe to run `docker compose down`
-- ✅ Can backup by copying the `app-code` directory
-- ✅ Can edit files from both inside and outside the container
+### Persistent Data:
+- ✅ **app-code/** - All your application code (host directory)
+- ✅ **postgres-data** - PostgreSQL database (Docker volume)
+- ✅ **pgadmin-data** - pgAdmin settings (Docker volume)
+- ✅ **redis-data** - Redis data with AOF persistence (Docker volume)
+
+### What survives container restarts:
+- ✅ All code in app-code directory
+- ✅ Database tables and data
+- ✅ User accounts and sessions
+- ✅ pgAdmin configurations
+- ✅ Redis cached data
+
+### Backup and Restore:
+
+**Backup all data:**
+```bash
+# Backup code
+tar -czf app-code-backup.tar.gz app-code/
+
+# Backup database
+docker compose exec postgres pg_dump -U devuser devdb > backup.sql
+
+# Backup all volumes
+docker run --rm -v mono-web-ide_postgres-data:/data -v $(pwd):/backup alpine tar czf /backup/postgres-backup.tar.gz -C /data .
+```
+
+**Restore database:**
+```bash
+docker compose exec -T postgres psql -U devuser devdb < backup.sql
+```
 
 ## Advanced Usage
 
