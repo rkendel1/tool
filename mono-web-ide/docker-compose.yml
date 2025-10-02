@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   # Code Server - Web-based IDE
   code-server:
     build:
-      context: ..
-      dockerfile: mono-web-ide/Dockerfile-codeserver
+      context: .
+      dockerfile: Dockerfile-codeserver
     container_name: mono-web-ide-codeserver
     ports:
       - "8080:8080"    # Code Server web interface
@@ -27,7 +25,7 @@ services:
     volumes:
       # Persistent volume for user projects
       - ./app-code:/home/coder/project/app-code
-      # Mount AI completion extension (read-only for reference)
+      # Mount AI completion extension from parent directory (read-only for reference)
       - ../extensions/ai-completion:/home/coder/project/extensions/ai-completion:ro
     depends_on:
       dyad-server:
@@ -45,8 +43,8 @@ services:
   # Dyad Test Server - Mock AI completion backend
   dyad-server:
     build:
-      context: ..
-      dockerfile: mono-web-ide/Dockerfile-dyad-server
+      context: .
+      dockerfile: Dockerfile-dyad-server
     container_name: mono-web-ide-dyad-server
     ports:
       - "5000:5000"    # Dyad API port

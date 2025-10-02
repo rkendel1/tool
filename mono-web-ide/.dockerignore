@@ -1,0 +1,9 @@
+# Include extensions directory for Dyad server
+!extensions/ai-completion/dyad-test-server.js
+!extensions/ai-completion/dyad-backend.js
+
+# Exclude everything else from mono-web-ide
+mono-web-ide/app-code/*/node_modules/
+.git
+.cache
+*.log

@@ -91,8 +91,8 @@ This directory is mounted read-only for reference. To modify the extension:
 1. Edit files in the host repository at `extensions/ai-completion/`
 2. Rebuild containers if needed:
    ```bash
-   docker-compose build
-   docker-compose up
+   docker compose build
+   docker compose up
    ```
 
 ## Switching to Production Dyad
@@ -108,8 +108,8 @@ To use a production Dyad instance:
 
 2. Restart the services:
    ```bash
-   docker-compose down
-   docker-compose up
+   docker compose down
+   docker compose up
    ```
 
 ## Troubleshooting
@@ -118,7 +118,7 @@ To use a production Dyad instance:
 
 1. Check Dyad server is running:
    ```bash
-   docker-compose ps dyad-server
+   docker compose ps dyad-server
    ```
 
 2. Check health:
@@ -128,7 +128,7 @@ To use a production Dyad instance:
 
 3. Check Code Server logs:
    ```bash
-   docker-compose logs code-server
+   docker compose logs code-server
    ```
 
 ### Extension Not Loading
@@ -136,7 +136,7 @@ To use a production Dyad instance:
 1. Check extension is in the correct location
 2. Restart Code Server:
    ```bash
-   docker-compose restart code-server
+   docker compose restart code-server
    ```
 
 3. Check VS Code extension is enabled in settings
@@ -145,13 +145,13 @@ To use a production Dyad instance:
 
 Check the backend URL is correctly set:
 ```bash
-docker-compose exec code-server env | grep DYAD
+docker compose exec code-server env | grep DYAD
 ```
 
 ## Support
 
 For issues with the extension:
 - Check the documentation files in this directory
-- Review Docker logs: `docker-compose logs`
+- Review Docker logs: `docker compose logs`
 - Test the Dyad server separately
 - Check VS Code extension settings

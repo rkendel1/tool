@@ -8,13 +8,13 @@ Start the entire environment with a single command:
 
 ```bash
 cd mono-web-ide
-docker-compose up
+docker compose up
 ```
 
 Stop the environment:
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
 ## Features
@@ -67,10 +67,10 @@ mono-web-ide/
 
 ```bash
 cd mono-web-ide
-docker-compose up -d
+docker compose up -d
 ```
 
-Wait for services to be healthy (check with `docker-compose ps`).
+Wait for services to be healthy (check with `docker compose ps`).
 
 ### 2. Open Code Server
 
@@ -144,7 +144,7 @@ To use a production Dyad instance instead of the test server:
    ```bash
    export DYAD_BACKEND_URL=https://your-dyad-instance.com/api/completions
    export API_KEY=your-production-api-key
-   docker-compose up
+   docker compose up
    ```
 
 ## Working with Git
@@ -228,10 +228,10 @@ The extension is pre-configured with:
 
 ```bash
 # Check logs
-docker-compose logs code-server
+docker compose logs code-server
 
 # Restart service
-docker-compose restart code-server
+docker compose restart code-server
 ```
 
 ### Dyad Server Not Responding
@@ -241,17 +241,17 @@ docker-compose restart code-server
 curl http://localhost:5000/health
 
 # Check logs
-docker-compose logs dyad-server
+docker compose logs dyad-server
 
 # Restart service
-docker-compose restart dyad-server
+docker compose restart dyad-server
 ```
 
 ### Port Already in Use
 
 ```bash
 # Stop all services
-docker-compose down
+docker compose down
 
 # Check what's using the port
 lsof -i :8080  # or any other port
@@ -270,10 +270,10 @@ sudo chown -R $USER:$USER app-code/
 
 ```bash
 # Rebuild all containers
-docker-compose build --no-cache
+docker compose build --no-cache
 
 # Rebuild specific service
-docker-compose build --no-cache code-server
+docker compose build --no-cache code-server
 ```
 
 ## Health Checks
@@ -282,7 +282,7 @@ Check if services are healthy:
 
 ```bash
 # All services status
-docker-compose ps
+docker compose ps
 
 # Code Server health
 curl http://localhost:8080/healthz
@@ -296,7 +296,7 @@ curl http://localhost:5000/health
 All your code in the `app-code` directory is persisted on the host machine. This means:
 
 - ✅ Code survives container restarts
-- ✅ Safe to run `docker-compose down`
+- ✅ Safe to run `docker compose down`
 - ✅ Can backup by copying the `app-code` directory
 - ✅ Can edit files from both inside and outside the container
 
@@ -322,21 +322,21 @@ Install additional VS Code extensions:
 
 ```bash
 # Access Code Server container
-docker-compose exec code-server bash
+docker compose exec code-server bash
 
 # Access Dyad Server container
-docker-compose exec dyad-server sh
+docker compose exec dyad-server sh
 ```
 
 ### Viewing Logs
 
 ```bash
 # All services
-docker-compose logs -f
+docker compose logs -f
 
 # Specific service
-docker-compose logs -f code-server
-docker-compose logs -f dyad-server
+docker compose logs -f code-server
+docker compose logs -f dyad-server
 ```
 
 ### Resource Limits

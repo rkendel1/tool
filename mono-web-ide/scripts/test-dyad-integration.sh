@@ -36,13 +36,13 @@ echo ""
 
 # Check Code Server
 if ! check_service "Code Server" "http://localhost:8080/healthz"; then
-    echo "  Start with: docker-compose up"
+    echo "  Start with: docker compose up"
     exit 1
 fi
 
 # Check Dyad Test Server
 if ! check_service "Dyad Test Server" "http://localhost:5000/health"; then
-    echo "  Start with: docker-compose up"
+    echo "  Start with: docker compose up"
     exit 1
 fi
 
@@ -93,8 +93,8 @@ echo "Test 3: Docker Service Status"
 echo "========================================"
 
 # Check if containers are healthy
-CODE_SERVER_HEALTH=$(docker-compose ps code-server | grep -c "healthy" || echo "0")
-DYAD_SERVER_HEALTH=$(docker-compose ps dyad-server | grep -c "healthy" || echo "0")
+CODE_SERVER_HEALTH=$(docker compose ps code-server | grep -c "healthy" || echo "0")
+DYAD_SERVER_HEALTH=$(docker compose ps dyad-server | grep -c "healthy" || echo "0")
 
 if [ "$CODE_SERVER_HEALTH" -gt 0 ]; then
     echo -e "${GREEN}✓ Code Server container is healthy${NC}"
@@ -114,7 +114,7 @@ echo "Test 4: Volume Persistence"
 echo "========================================"
 
 # Check if app-code directory exists and is writable
-if docker-compose exec -T code-server test -w /home/coder/project/app-code; then
+if docker compose exec -T code-server test -w /home/coder/project/app-code; then
     echo -e "${GREEN}✓ app-code volume is mounted and writable${NC}"
 else
     echo -e "${RED}✗ app-code volume is not writable${NC}"
@@ -122,7 +122,7 @@ else
 fi
 
 # Check if extensions are mounted
-if docker-compose exec -T code-server test -d /home/coder/project/extensions/ai-completion; then
+if docker compose exec -T code-server test -d /home/coder/project/extensions/ai-completion; then
     echo -e "${GREEN}✓ extensions volume is mounted${NC}"
 else
     echo -e "${RED}✗ extensions volume is not mounted${NC}"
