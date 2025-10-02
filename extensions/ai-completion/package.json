@@ -1,0 +1,92 @@
+{
+  "name": "ai-completion",
+  "displayName": "AI Code Completion",
+  "description": "AI-powered code completion with support for Dyad and custom AI models",
+  "version": "0.1.0",
+  "publisher": "code-server",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.56.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "AI Code Completion",
+      "properties": {
+        "aiCompletion.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable AI code completion"
+        },
+        "aiCompletion.backendUrl": {
+          "type": "string",
+          "default": "http://localhost:8080/api/completions",
+          "description": "Backend API endpoint for code completions. Supports local Dyad, remote Dyad cloud, or custom AI services."
+        },
+        "aiCompletion.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key for authenticating with the backend service"
+        },
+        "aiCompletion.requestTimeout": {
+          "type": "number",
+          "default": 5000,
+          "description": "Request timeout in milliseconds"
+        },
+        "aiCompletion.dyadSessionId": {
+          "type": "string",
+          "default": "",
+          "description": "Dyad session ID for collaborative features (future integration hook)"
+        },
+        "aiCompletion.dyadUserId": {
+          "type": "string",
+          "default": "",
+          "description": "Dyad user ID for collaborative features (future integration hook)"
+        },
+        "aiCompletion.showInlinePrompt": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show inline prompt for AI completions"
+        },
+        "aiCompletion.maxSuggestions": {
+          "type": "number",
+          "default": 5,
+          "description": "Maximum number of suggestions to display"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "aiCompletion.enable",
+        "title": "Enable AI Code Completion",
+        "category": "AI Completion"
+      },
+      {
+        "command": "aiCompletion.disable",
+        "title": "Disable AI Code Completion",
+        "category": "AI Completion"
+      },
+      {
+        "command": "aiCompletion.testConnection",
+        "title": "Test Backend Connection",
+        "category": "AI Completion"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.56.0",
+    "typescript": "^5.6.2"
+  }
+}
