@@ -5,6 +5,10 @@
 CREATE SCHEMA IF NOT EXISTS extensions;
 GRANT USAGE ON SCHEMA extensions TO anon, authenticated, service_role;
 
+-- Create auth schema if it doesn't exist (required for JWT functions)
+CREATE SCHEMA IF NOT EXISTS auth;
+GRANT USAGE ON SCHEMA auth TO anon, authenticated, service_role;
+
 -- Function to get the current user's JWT claims
 CREATE OR REPLACE FUNCTION auth.jwt() RETURNS jsonb
     LANGUAGE sql STABLE
