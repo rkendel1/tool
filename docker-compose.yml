@@ -243,6 +243,12 @@ services:
       - supabase-network
 
   # PostgreSQL Database with Supabase extensions
+  # TROUBLESHOOTING DB CONNECTIVITY:
+  # - Ensure postgresql.conf has listen_addresses = '*' to accept connections from other containers
+  # - Services may restart initially while waiting for DB schemas to be created
+  # - Check logs with: docker compose logs db
+  # - Verify DB is ready: docker compose exec db pg_isready -U postgres
+  # - If services keep restarting, ensure auth schema exists before JWT functions are created
   db:
     container_name: supabase-db
     image: supabase/postgres:15.1.0.147
