@@ -4,7 +4,7 @@ Run [VS Code](https://github.com/Microsoft/vscode) on any machine anywhere with 
 
 ## 🚀 Quick Start with Supabase
 
-This repository now includes a complete Supabase stack for local development, featuring all essential backend services in Docker containers.
+This repository includes a **complete Supabase-only stack** for local development. All database services connect to the Supabase PostgreSQL database - there is **no standalone PostgreSQL instance**. This ensures a production-like environment for local development.
 
 ### Prerequisites
 
@@ -25,21 +25,56 @@ docker compose up -d
 open http://localhost:3000
 ```
 
-That's it! You now have a complete backend running locally.
+That's it! You now have a complete Supabase backend running locally.
 
 ## 📦 What's Included
 
-The Supabase integration provides:
+The Supabase-only integration provides:
 
-- **Supabase Database** (Port 54321) - PostgreSQL 15 with Supabase extensions and optimizations
+- **Supabase Database** (Port 54321) - PostgreSQL 15 with Supabase extensions *(single database instance for all services)*
 - **Supabase Studio** (Port 3000) - Web UI for database and API management
-- **Auth Service** (via Kong:8000) - Complete authentication system
-- **Storage Service** (via Kong:8000) - Object storage with image transformations
-- **Realtime** (via Kong:8000) - WebSocket subscriptions for live data
+- **Auth Service** (via Kong:8000) - Complete authentication system using `auth` schema
+- **Storage Service** (via Kong:8000) - Object storage using `storage` schema with image transformations
+- **Realtime** (via Kong:8000) - WebSocket subscriptions for live data using `_realtime` schema
 - **Edge Functions** (via Kong:8000) - Serverless functions (Deno)
 - **PostgREST API** (via Kong:8000) - Auto-generated REST API from your database
 - **Kong API Gateway** (Port 8000) - Unified API endpoint
 - **Redis** (Port 6379) - Caching and session management
+
+> **Note:** All services connect to the same Supabase PostgreSQL database. Each service uses its own schema (`auth`, `storage`, `_realtime`, etc.) for data isolation.
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  Supabase PostgreSQL (Port 54321)           │
+├─────────────────────────────────────────────────────────────┤
+│  Schemas:                                                   │
+│  • public     → Your application data                       │
+│  • auth       → Users, sessions, tokens                     │
+│  • storage    → Buckets, objects metadata                   │
+│  • _realtime  → WebSocket subscriptions                     │
+└─────────────────────────────────────────────────────────────┘
+           ↑         ↑         ↑         ↑         ↑
+           │         │         │         │         │
+    ┌──────┴───┬────┴────┬────┴────┬────┴────┬────┴──────┐
+    │          │         │         │         │           │
+┌───┴───┐ ┌───┴───┐ ┌───┴───┐ ┌───┴───┐ ┌───┴────┐ ┌────┴────┐
+│PostgREST│ │ Auth  │ │Storage│ │Realtime│ │Functions│ │ Studio │
+└───┬───┘ └───┬───┘ └───┬───┘ └───┬───┘ └───┬────┘ └────┬────┘
+    │         │         │         │         │           │
+    └─────────┴─────────┴─────────┴─────────┴───────────┘
+                          ↓
+                   ┌──────────────┐
+                   │ Kong Gateway │ (Port 8000)
+                   └──────────────┘
+```
+
+**Key Points:**
+- Single PostgreSQL database for all services (Supabase-only)
+- Each service uses its own schema for data isolation
+- Kong routes all API traffic to appropriate services
+- Studio provides UI for managing all schemas
 
 ## 🎯 Key Features
 
@@ -225,6 +260,15 @@ docker compose up -d
 ```
 
 For more troubleshooting help, see [SUPABASE_SETUP.md](./SUPABASE_SETUP.md#troubleshooting).
+
+## 📖 Documentation
+
+- **[QUICKREF.md](./QUICKREF.md)** - Quick reference guide for common commands and operations
+- **[WORKFLOW.md](./WORKFLOW.md)** - Complete Supabase-only development workflow guide
+- **[MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md)** - Migration guide from standalone PostgreSQL to Supabase-only
+- **[SUPABASE_SETUP.md](./SUPABASE_SETUP.md)** - Detailed setup and configuration guide
+- **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)** - Common issues and solutions
+- **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** - Implementation details
 
 ## 🎓 Learning Resources
 

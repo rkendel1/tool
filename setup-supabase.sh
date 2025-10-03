@@ -65,6 +65,40 @@ echo -e "${GREEN}✓${NC} Required directories are ready"
 
 echo ""
 echo "========================================="
+echo "Verifying database migration files..."
+echo "========================================="
+
+# Check for required migration files
+REQUIRED_FILES=(
+    "volumes/db/roles.sql"
+    "volumes/db/realtime.sql"
+    "volumes/db/99-create-users.sh"
+    "volumes/db/jwt.sql"
+    "volumes/db/05-auth-schema.sql"
+    "volumes/db/06-storage-schema.sql"
+)
+
+MISSING_FILES=()
+for file in "${REQUIRED_FILES[@]}"; do
+    if [ ! -f "$file" ]; then
+        MISSING_FILES+=("$file")
+    fi
+done
+
+if [ ${#MISSING_FILES[@]} -eq 0 ]; then
+    echo -e "${GREEN}✓${NC} All required migration files are present"
+else
+    echo -e "${RED}✗${NC} Missing migration files:"
+    for file in "${MISSING_FILES[@]}"; do
+        echo "  - $file"
+    done
+    echo ""
+    echo "Please ensure all migration files are present in volumes/db/"
+    exit 1
+fi
+
+echo ""
+echo "========================================="
 echo "Setup Complete!"
 echo "========================================="
 echo ""

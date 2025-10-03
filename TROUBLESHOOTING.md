@@ -1,84 +1,42 @@
 # Troubleshooting Common Issues
 
-## Services Keep Restarting
+## Architecture Overview
 
-Some Supabase services (particularly Auth, Storage, and Kong) may restart initially because they expect specific database schemas that aren't included in the basic setup. This is normal for first-time initialization.
+This setup uses a **Supabase-only database architecture** where all services connect to a single Supabase PostgreSQL database. Each service uses its own schema:
+- Auth → `auth` schema
+- Storage → `storage` schema  
+- Realtime → `_realtime` schema
+- Your app → `public` schema
 
-### Quick Fix for Production-Ready Setup
+All required schemas are automatically created on first startup via migration scripts in `volumes/db/`.
 
-If you need a fully operational Supabase instance immediately, use the official Supabase CLI:
+## Clean Startup Process
 
-```bash
-# Install Supabase CLI
-npm install -g supabase
+On first startup, the following happens in order:
 
-# Initialize Supabase in a directory
-supabase init
+1. **PostgreSQL starts** and runs initialization scripts from `volumes/db/`
+2. **Roles are created** (anon, authenticated, service_role, etc.)
+3. **Schemas are created** (auth, storage, _realtime, extensions)
+4. **Database users are created** (authenticator, supabase_auth_admin, etc.)
+5. **Services connect** to the database using their respective users and schemas
 
-# Start Supabase
-supabase start
-```
+This process should complete successfully without manual intervention.
 
-The official CLI provides a complete, battle-tested setup with all schemas and migrations.
+## Services Status
 
-### Working Services in Current Setup
+All services should start successfully:
 
-These services work out of the box:
-
-- ✅ **Supabase Database** (Port 54321) - PostgreSQL 15 with Supabase extensions
+- ✅ **Supabase Database** (Port 54321) - PostgreSQL 15 with all required schemas
 - ✅ **Redis** (Port 6379)  
-- ✅ **PostgREST API** (via Kong:8000/rest/v1)
-- ✅ **Postgres Meta** (Database management API)
-- ✅ **ImgProxy** (Image transformations)
-- ✅ **Edge Functions** (Deno runtime)
-
-### Services Requiring Additional Setup
-
-These services need database migrations to run properly:
-
-- ⚠️ **Auth (GoTrue)** - Requires `auth` schema
-- ⚠️ **Storage** - Requires `storage` schema  
-- ⚠️ **Realtime** - Partially configured
-- ⚠️ **Kong** - May restart until all upstream services are healthy
-- ⚠️ **Studio** - May show unhealthy until Kong is stable
-
-### Adding Missing Schemas
-
-To enable the Auth and Storage services, you need to add their schemas. The Supabase team provides these migrations:
-
-1. Download the auth schema:
-```bash
-curl -o volumes/db/05-auth-schema.sql https://raw.githubusercontent.com/supabase/postgres/develop/migrations/db/init-scripts/00100000000000-auth-schema.sql
-```
-
-2. Download the storage schema:
-```bash
-curl -o volumes/db/06-storage-schema.sql https://raw.githubusercontent.com/supabase/postgres/develop/migrations/db/init-scripts/00200000000000-storage-schema.sql
-```
-
-3. Restart the stack:
-```bash
-docker compose down -v
-docker compose up -d
-```
-
-## Alternative: Minimal Setup
-
-If you only need the Supabase Database with PostgREST API (which covers most use cases), you can disable the optional services:
-
-Edit `docker-compose.yml` and comment out:
-- `auth`
-- `storage`
-- `kong`  
-- `realtime`
-- `analytics`
-- `studio`
-
-This gives you a lightweight, stable setup with:
-- Supabase Database (PostgreSQL 15 with Supabase extensions)
-- Automatic REST API generation (PostgREST)
-- Redis for caching
-- Edge Functions for serverless logic
+- ✅ **PostgREST API** (via Kong:8000/rest/v1) - REST API from `public` schema
+- ✅ **Auth (GoTrue)** (via Kong:8000/auth/v1) - Authentication using `auth` schema
+- ✅ **Storage** (via Kong:8000/storage/v1) - File storage using `storage` schema
+- ✅ **Realtime** (via Kong:8000/realtime/v1) - WebSocket subscriptions using `_realtime` schema
+- ✅ **Postgres Meta** - Database management API
+- ✅ **ImgProxy** - Image transformations for Storage
+- ✅ **Edge Functions** - Deno runtime for serverless functions
+- ✅ **Kong** - API Gateway (may restart initially until all services are healthy)
+- ✅ **Studio** - Web UI (may show unhealthy until Kong is stable)
 
 ## Service Health Check Commands
 
@@ -86,18 +44,86 @@ This gives you a lightweight, stable setup with:
 # Check all services
 docker compose ps
 
-# Check database
+# Check database is ready
 docker compose exec db pg_isready -U postgres
+
+# Check database schemas
+docker compose exec db psql -U postgres -c "\dn"
+
+# List database users
+docker compose exec db psql -U postgres -c "\du"
 
 # Check Redis
 docker compose exec redis redis-cli ping
 
+# Test Auth service
+curl http://localhost:8000/auth/v1/health
+
+# Test Storage service  
+curl http://localhost:8000/storage/v1/status
+
 # Test PostgREST API
 curl http://localhost:8000/rest/v1/
 
-# View logs for a service
+# View logs for specific service
+docker compose logs -f db
 docker compose logs -f auth
 docker compose logs -f storage
+docker compose logs -f kong
+```
+
+## Common Issues
+
+### Services Keep Restarting
+
+**Symptom:** Some services (especially Kong, Auth, Storage) restart repeatedly.
+
+**Cause:** Usually related to database initialization timing or missing schemas.
+
+**Solution:**
+1. Verify all migration files exist:
+```bash
+ls -la volumes/db/
+# Should show: roles.sql, realtime.sql, 99-create-users.sh, jwt.sql, 05-auth-schema.sql, 06-storage-schema.sql
+```
+
+2. Check database is fully initialized:
+```bash
+docker compose logs db | grep "database system is ready"
+```
+
+3. Verify schemas were created:
+```bash
+docker compose exec db psql -U postgres -c "\dn"
+# Should show: auth, storage, _realtime, public, extensions schemas
+```
+
+4. If issues persist, clean restart:
+```bash
+docker compose down -v
+docker compose up -d
+docker compose logs -f
+```
+
+### Database Connection Refused
+
+**Symptom:** Services can't connect to database.
+
+**Solution:**
+1. Ensure database is healthy:
+```bash
+docker compose ps db
+docker compose exec db pg_isready -U postgres
+```
+
+2. Check if database accepts connections:
+```bash
+docker compose exec db psql -U postgres -c "SELECT 1;"
+```
+
+3. Verify network connectivity:
+```bash
+docker compose exec auth ping -c 3 db
 ```
 
 ## Network Connectivity Issues
