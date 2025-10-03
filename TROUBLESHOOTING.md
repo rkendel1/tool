@@ -25,7 +25,7 @@ The official CLI provides a complete, battle-tested setup with all schemas and m
 
 These services work out of the box:
 
-- ✅ **PostgreSQL Database** (Port 54321)
+- ✅ **Supabase Database** (Port 54321) - PostgreSQL 15 with Supabase extensions
 - ✅ **Redis** (Port 6379)  
 - ✅ **PostgREST API** (via Kong:8000/rest/v1)
 - ✅ **Postgres Meta** (Database management API)
@@ -64,7 +64,7 @@ docker compose up -d
 
 ## Alternative: Minimal Setup
 
-If you only need a PostgreSQL database with PostgREST API (which covers most use cases), you can disable the problematic services:
+If you only need the Supabase Database with PostgREST API (which covers most use cases), you can disable the optional services:
 
 Edit `docker-compose.yml` and comment out:
 - `auth`
@@ -75,7 +75,7 @@ Edit `docker-compose.yml` and comment out:
 - `studio`
 
 This gives you a lightweight, stable setup with:
-- PostgreSQL with Supabase extensions
+- Supabase Database (PostgreSQL 15 with Supabase extensions)
 - Automatic REST API generation (PostgREST)
 - Redis for caching
 - Edge Functions for serverless logic

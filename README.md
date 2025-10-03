@@ -31,7 +31,7 @@ That's it! You now have a complete backend running locally.
 
 The Supabase integration provides:
 
-- **PostgreSQL Database** (Port 54321) - Production-grade database with extensions
+- **Supabase Database** (Port 54321) - PostgreSQL 15 with Supabase extensions and optimizations
 - **Supabase Studio** (Port 3000) - Web UI for database and API management
 - **Auth Service** (via Kong:8000) - Complete authentication system
 - **Storage Service** (via Kong:8000) - Object storage with image transformations
@@ -87,7 +87,7 @@ No code changes required!
 |---------|-----|---------|
 | Supabase Studio | http://localhost:3000 | Database management UI |
 | API Gateway | http://localhost:8000 | Unified API endpoint |
-| PostgreSQL | localhost:54321 | Direct database access |
+| Supabase Database | localhost:54321 | Direct database access (PostgreSQL protocol) |
 | Redis | localhost:6379 | Cache and sessions |
 
 ## 💻 Usage Example

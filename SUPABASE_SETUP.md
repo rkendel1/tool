@@ -22,7 +22,7 @@ This guide will help you set up and use Supabase in your local development envir
 
 This Docker Compose setup provides a complete local Supabase stack including:
 
-- **PostgreSQL Database** with Supabase extensions
+- **Supabase Database** - PostgreSQL 15 with Supabase extensions and optimizations
 - **Auth Service (GoTrue)** for user authentication
 - **Storage Service** for file uploads and management
 - **Realtime Service** for WebSocket subscriptions
@@ -132,12 +132,12 @@ Routes all API requests to the appropriate Supabase services.
   - `/storage/v1/*` → Storage API
   - `/functions/v1/*` → Edge Functions
 
-### PostgreSQL Database (Port 54321)
+### Supabase Database (Port 54321)
 
-Supabase-configured PostgreSQL database.
+PostgreSQL 15 with Supabase extensions and optimizations. This is the primary database for all Supabase services and your application data.
 
 - **Host:** localhost
-- **Port:** 54321 (exposed on different port to avoid conflicts)
+- **Port:** 54321 (exposed on host port 54321 to avoid conflicts with existing PostgreSQL installations)
 - **Database:** postgres (or as configured in `.env`)
 - **User:** postgres
 - **Password:** See `POSTGRES_PASSWORD` in `.env`
@@ -146,6 +146,8 @@ Supabase-configured PostgreSQL database.
 ```
 postgresql://postgres:your-password@localhost:54321/postgres
 ```
+
+**Note:** This is a Supabase-optimized PostgreSQL database, not a standalone PostgreSQL instance. It includes Supabase-specific extensions, schemas, and configurations required for Auth, Storage, Realtime, and other Supabase services.
 
 ### Auth Service (GoTrue)
 
