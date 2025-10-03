@@ -263,6 +263,7 @@ For more troubleshooting help, see [SUPABASE_SETUP.md](./SUPABASE_SETUP.md#troub
 
 ## 📖 Documentation
 
+- **[QUICKREF.md](./QUICKREF.md)** - Quick reference guide for common commands and operations
 - **[WORKFLOW.md](./WORKFLOW.md)** - Complete Supabase-only development workflow guide
 - **[SUPABASE_SETUP.md](./SUPABASE_SETUP.md)** - Detailed setup and configuration guide
 - **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)** - Common issues and solutions
