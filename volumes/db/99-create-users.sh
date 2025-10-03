@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 
-# Create users with passwords from environment variables
+# Create Supabase-specific database users with passwords from environment variables
+# These users are required for Supabase services (Auth, Storage, etc.)
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     -- Create authenticator role for PostgREST
     DO \$\$
