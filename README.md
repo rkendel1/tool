@@ -265,6 +265,7 @@ For more troubleshooting help, see [SUPABASE_SETUP.md](./SUPABASE_SETUP.md#troub
 
 - **[QUICKREF.md](./QUICKREF.md)** - Quick reference guide for common commands and operations
 - **[WORKFLOW.md](./WORKFLOW.md)** - Complete Supabase-only development workflow guide
+- **[MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md)** - Migration guide from standalone PostgreSQL to Supabase-only
 - **[SUPABASE_SETUP.md](./SUPABASE_SETUP.md)** - Detailed setup and configuration guide
 - **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)** - Common issues and solutions
 - **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** - Implementation details
