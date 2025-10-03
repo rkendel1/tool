@@ -242,7 +242,8 @@ services:
     networks:
       - supabase-network
 
-  # PostgreSQL Database with Supabase extensions
+  # Supabase Database (PostgreSQL 15 with Supabase extensions)
+  # This is the primary database for all Supabase services and application data
   # TROUBLESHOOTING DB CONNECTIVITY:
   # - Ensure postgresql.conf has listen_addresses = '*' to accept connections from other containers
   # - Services may restart initially while waiting for DB schemas to be created
@@ -265,7 +266,7 @@ services:
       - -c
       - log_min_messages=fatal
     ports:
-      - "54321:5432"  # Expose Postgres on different port to avoid conflicts
+      - "54321:5432"  # Expose Supabase Database on host port 54321 (to avoid conflicts with existing PostgreSQL installations)
     environment:
       POSTGRES_HOST: /var/run/postgresql
       PGPORT: 5432

@@ -15,8 +15,8 @@ This repository now includes a complete Docker Compose configuration for running
 
 ### Services Configured
 
-1. **PostgreSQL Database** (Port 54321)
-   - Supabase-optimized PostgreSQL 15
+1. **Supabase Database** (Port 54321)
+   - PostgreSQL 15 with Supabase extensions and optimizations
    - Custom roles (anon, authenticated, service_role, authenticator)
    - All required users created (supabase_admin, supabase_auth_admin, supabase_storage_admin)
    - Health checks configured
@@ -135,7 +135,7 @@ docker compose down -v
 
 The `.env.example` file includes:
 
-- **Database Configuration** - PostgreSQL credentials, port, database name
+- **Database Configuration** - Supabase Database credentials, port, database name
 - **JWT Settings** - Secret keys for token generation/validation
 - **API Keys** - Anon key (public) and service role key (private)
 - **Authentication** - Email/phone signup settings, OAuth providers
@@ -187,13 +187,13 @@ No code changes required.
 
 ### Persistent Data ✅
 All data survives container restarts:
-- Database (PostgreSQL volume)
+- Supabase Database (PostgreSQL volume)
 - Cache (Redis volume)
 - Files (Storage volume)
 
 ### Health Monitoring ✅
 Health checks for:
-- PostgreSQL
+- Supabase Database (PostgreSQL)
 - Redis
 - ImgProxy
 - Meta
