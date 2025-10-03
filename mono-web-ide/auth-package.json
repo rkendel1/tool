@@ -1,0 +1,23 @@
+{
+  "name": "auth-service",
+  "version": "1.0.0",
+  "description": "JWT-based authentication service for mono-web-ide",
+  "main": "auth-service.js",
+  "scripts": {
+    "start": "node auth-service.js"
+  },
+  "keywords": [
+    "auth",
+    "jwt",
+    "express",
+    "postgres"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "pg": "^8.11.3"
+  }
+}

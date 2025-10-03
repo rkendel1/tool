@@ -11,7 +11,7 @@ This document provides a summary of the complete Dockerized web IDE environment 
 │
 ├── /app-code                  # All user projects / multiple apps ✓
 │   ├── /app1                  # React web app ✓
-│   ├── /app2                  # Express API server ✓
+│   ├── /app2                  # Express API server (with DB integration) ✓
 │   └── README.md              # Instructions for projects ✓
 │
 ├── /extensions/ai-completion/ # VS Code extension (reference) ✓
@@ -21,13 +21,23 @@ This document provides a summary of the complete Dockerized web IDE environment 
 │   ├── start-app1.sh         # Start React app ✓
 │   ├── start-app2.sh         # Start Express API ✓
 │   ├── start-all-apps.sh     # Start all apps in tmux ✓
-│   └── test-dyad-integration.sh # Integration tests ✓
+│   └── test-dyad-integration.sh # Integration tests (all services) ✓
 │
-├── docker-compose.yml          # Docker Compose stack ✓
+├── /postgres-init             # PostgreSQL initialization ✓
+│   └── 01-init.sql           # Database schema and seed data ✓
+│
+├── /pgadmin-config            # pgAdmin configuration ✓
+│   └── servers.json          # Pre-configured Postgres connection ✓
+│
+├── docker-compose.yml          # Docker Compose stack (6 services) ✓
 ├── Dockerfile-codeserver       # Custom Code Server Dockerfile ✓
 ├── Dockerfile-dyad-server      # Dyad test server Dockerfile ✓
+├── Dockerfile-auth-service     # Auth service Dockerfile ✓
 ├── dyad-test-server.js        # Test server implementation ✓
+├── auth-service.js            # JWT auth service implementation ✓
+├── auth-package.json          # Auth service dependencies ✓
 ├── setup.sh                   # Setup script ✓
+├── .env.example               # Environment variables template ✓
 ├── README.md                  # Full environment setup ✓
 ├── QUICKSTART.md              # Quick start guide ✓
 ├── ARCHITECTURE.md            # System architecture ✓
@@ -46,9 +56,9 @@ This document provides a summary of the complete Dockerized web IDE environment 
 - Extensions volume: `../extensions/ai-completion` (read-only)
 - Port 8080 exposed for web IDE
 - Ports 3000-3005 for app previews
-- Environment variables: `DYAD_BACKEND_URL`, `API_KEY`, `AI_MODEL`, `SESSION_ID`, `USER_ID`
+- Environment variables: Database, Auth, Dyad configuration
 - Health check configured
-- Depends on Dyad server
+- Depends on Dyad, Postgres, Auth services
 
 ✅ **Dyad Test Server Service**
 - Base image: `node:18-alpine`
@@ -57,14 +67,51 @@ This document provides a summary of the complete Dockerized web IDE environment 
 - Health check configured
 - Environment variables: `PORT`, `RESPONSE_DELAY`
 
+✅ **PostgreSQL 15 Service**
+- Base image: `postgres:15-alpine`
+- Port 5432 exposed
+- Persistent volume: `postgres-data`
+- Initialization scripts: `./postgres-init`
+- Health check configured
+- Pre-seeded with sample data
+- Default credentials: devuser/devpass
+
+✅ **pgAdmin 4 Service**
+- Base image: `dpage/pgadmin4:latest`
+- Port 5050 exposed (mapped from port 80)
+- Persistent volume: `pgadmin-data`
+- Pre-configured Postgres connection
+- Default credentials: admin@example.com/admin
+
+✅ **Auth Service**
+- Base image: `node:18-alpine`
+- Port 4000 exposed
+- JWT-based authentication
+- Database-backed user storage
+- Default users: admin/admin123, demo/demo123
+- Health check configured
+- Depends on Postgres
+
+✅ **Redis Service**
+- Base image: `redis:7-alpine`
+- Port 6379 exposed
+- Persistent volume: `redis-data`
+- AOF persistence enabled
+- Optional password protection
+- Health check configured
+
 ✅ **Network Configuration**
 - Bridge network: `mono-web-ide`
 - Internal service discovery enabled
+- All services can communicate via service names
 
 ✅ **Volume Configuration**
-- Persistent app-code volume
+- Persistent app-code volume (host directory)
+- Persistent postgres-data volume (Docker volume)
+- Persistent pgadmin-data volume (Docker volume)
+- Persistent redis-data volume (Docker volume)
 - Read-only extensions mount
-- Survives container restarts
+- All data survives container restarts
 
 ### 3. Dockerfiles ✓
 
@@ -83,6 +130,14 @@ This document provides a summary of the complete Dockerized web IDE environment 
 - Health check included
 - Minimal footprint
 
+✅ **Dockerfile-auth-service**
+- Based on `node:18-alpine`
+- Installs dependencies (express, jsonwebtoken, bcryptjs, pg)
+- Copies auth-service.js
+- Configurable JWT settings
+- Health check included
+- Database connection configured
+
 ### 4. Example Applications ✓
 
 ✅ **App1 - React Application**
@@ -92,14 +147,19 @@ This document provides a summary of the complete Dockerized web IDE environment 
 - CSS styling included
 - Package.json configured
 - README with instructions
+- .env.example for configuration
 
 ✅ **App2 - Express API**
+- Two versions: Simple (in-memory) and Enhanced (with DB)
 - RESTful API server
 - CORS enabled
 - Multiple endpoints (GET, POST, PUT, DELETE)
+- **Database integration** (PostgreSQL)
+- **Auth service integration** (JWT verification)
 - Health check endpoint
-- Mock data storage
-- Complete documentation
+- Environment variable support
+- Complete documentation with DB examples
+- .env.example for configuration
 
 ### 5. Scripts ✓
 
@@ -125,11 +185,15 @@ This document provides a summary of the complete Dockerized web IDE environment 
 - Easy navigation
 
 ✅ **test-dyad-integration.sh**
-- Health checks for services
-- API endpoint testing
+- Health checks for ALL services (Code Server, Dyad, Postgres, pgAdmin, Auth, Redis)
+- API endpoint testing for all services
+- Database query testing
+- Auth service registration/login testing
+- Redis SET/GET testing
 - Volume persistence verification
 - Docker service status
 - Comprehensive error reporting
+- User-friendly colored output
 
 ### 6. Documentation ✓
 
@@ -137,25 +201,34 @@ This document provides a summary of the complete Dockerized web IDE environment 
 - Complete feature overview
 - Prerequisites
 - Quick start guide
+- **All 6 services documented** (Code Server, Dyad, Postgres, pgAdmin, Auth, Redis)
 - Configuration instructions
+- **Database integration guide**
+- **Authentication integration guide**
+- **Redis integration guide**
 - Development workflow
 - Git integration
-- Troubleshooting
+- Troubleshooting (including DB/Auth/Redis)
 - Advanced usage
+- Backup and restore procedures
 
 ✅ **QUICKSTART.md**
 - 5-minute setup guide
-- Step-by-step instructions
+- Step-by-step instructions for all services
+- pgAdmin access instructions
+- Auth service testing examples
+- Database integration examples
 - Common commands
 - Quick troubleshooting
 
 ✅ **ARCHITECTURE.md**
-- System architecture diagrams
-- Component descriptions
-- Data flow explanations
-- Network architecture
-- Security considerations
-- Scaling strategies
+- System architecture diagrams (updated with all services)
+- All 6 component descriptions
+- Data flow explanations (including auth and database)
+- Network architecture (updated)
+- **Security considerations** (all services)
+- **Volume strategy** (all persistent volumes)
+- **Backup strategies**
 - Technology stack
 
 ✅ **DEPLOYMENT.md**
@@ -176,11 +249,18 @@ This document provides a summary of the complete Dockerized web IDE environment 
 
 ✅ **.env.example**
 - Template for environment variables
-- Password configuration
+- Password configuration (Code Server, pgAdmin)
+- Database credentials (Postgres)
+- Auth service configuration (JWT secret)
+- Redis configuration (optional password)
 - Dyad backend URL
 - API key setup
 - Model selection
 - Session/user IDs
+
+✅ **App .env.example files**
+- app1/.env.example - React app configuration
+- app2/.env.example - Express API with DB/Auth config
 
 ✅ **.gitignore**
 - Excludes .env
@@ -199,12 +279,17 @@ This document provides a summary of the complete Dockerized web IDE environment 
 
 - ✅ Out-of-the-box web IDE (Code Server)
 - ✅ AI code completion (Dyad integration)
+- ✅ **Full database stack (PostgreSQL 15 + pgAdmin 4)**
+- ✅ **JWT-based authentication service**
+- ✅ **Redis caching and session storage**
 - ✅ Multiple app support (app1, app2, and more)
-- ✅ Persistent storage (volumes)
+- ✅ Persistent storage (4 volumes)
 - ✅ Hot reload for development
 - ✅ Live app previews (ports 3000-3005)
 - ✅ Single command startup (`docker compose up`)
 - ✅ Single command shutdown (`docker compose down`)
+- ✅ **Pre-seeded database with sample data**
+- ✅ **Default users for testing (admin/demo)**
 - ✅ Health checks for all services
 - ✅ Git integration ready
 - ✅ GitHub commit capability

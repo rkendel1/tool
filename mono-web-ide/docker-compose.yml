@@ -22,6 +22,17 @@ services:
       - USER_ID=${USER_ID:-default-user}
       # Code Server configuration
       - PASSWORD=${PASSWORD:-coder}
+      # Database configuration
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-devdb}
+      - POSTGRES_USER=${POSTGRES_USER:-devuser}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-devpass}
+      # Auth service configuration
+      - AUTH_SERVICE_URL=http://auth-service:4000
+      # Redis configuration (optional)
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     volumes:
       # Persistent volume for user projects
       - ./app-code:/home/coder/project/app-code
@@ -29,6 +40,10 @@ services:
       - ../extensions/ai-completion:/home/coder/project/extensions/ai-completion:ro
     depends_on:
       dyad-server:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      auth-service:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
@@ -61,10 +76,109 @@ services:
     networks:
       - mono-web-ide
 
+  # PostgreSQL 15 - Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: mono-web-ide-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-devuser}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-devpass}
+      - POSTGRES_DB=${POSTGRES_DB:-devdb}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-devuser} -d ${POSTGRES_DB:-devdb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - mono-web-ide
+
+  # pgAdmin 4 - Database GUI
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: mono-web-ide-pgadmin
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL:-admin@example.com}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD:-admin}
+      - PGADMIN_CONFIG_SERVER_MODE=False
+      - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+      - ./pgadmin-config/servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - mono-web-ide
+
+  # Auth Service - JWT-based authentication
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile-auth-service
+    container_name: mono-web-ide-auth-service
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-24h}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-devdb}
+      - POSTGRES_USER=${POSTGRES_USER:-devuser}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-devpass}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - mono-web-ide
+
+  # Redis - Caching and session storage (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: mono-web-ide-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - mono-web-ide
+
 networks:
   mono-web-ide:
     driver: bridge
 
 volumes:
   app-code:
+    driver: local
+  postgres-data:
+    driver: local
+  pgadmin-data:
+    driver: local
+  redis-data:
     driver: local
