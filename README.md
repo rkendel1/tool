@@ -43,6 +43,39 @@ The Supabase-only integration provides:
 
 > **Note:** All services connect to the same Supabase PostgreSQL database. Each service uses its own schema (`auth`, `storage`, `_realtime`, etc.) for data isolation.
 
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  Supabase PostgreSQL (Port 54321)           │
+├─────────────────────────────────────────────────────────────┤
+│  Schemas:                                                   │
+│  • public     → Your application data                       │
+│  • auth       → Users, sessions, tokens                     │
+│  • storage    → Buckets, objects metadata                   │
+│  • _realtime  → WebSocket subscriptions                     │
+└─────────────────────────────────────────────────────────────┘
+           ↑         ↑         ↑         ↑         ↑
+           │         │         │         │         │
+    ┌──────┴───┬────┴────┬────┴────┬────┴────┬────┴──────┐
+    │          │         │         │         │           │
+┌───┴───┐ ┌───┴───┐ ┌───┴───┐ ┌───┴───┐ ┌───┴────┐ ┌────┴────┐
+│PostgREST│ │ Auth  │ │Storage│ │Realtime│ │Functions│ │ Studio │
+└───┬───┘ └───┬───┘ └───┬───┘ └───┬───┘ └───┬────┘ └────┬────┘
+    │         │         │         │         │           │
+    └─────────┴─────────┴─────────┴─────────┴───────────┘
+                          ↓
+                   ┌──────────────┐
+                   │ Kong Gateway │ (Port 8000)
+                   └──────────────┘
+```
+
+**Key Points:**
+- Single PostgreSQL database for all services (Supabase-only)
+- Each service uses its own schema for data isolation
+- Kong routes all API traffic to appropriate services
+- Studio provides UI for managing all schemas
+
 ## 🎯 Key Features
 
 ### Single Command Startup
@@ -227,6 +260,13 @@ docker compose up -d
 ```
 
 For more troubleshooting help, see [SUPABASE_SETUP.md](./SUPABASE_SETUP.md#troubleshooting).
+
+## 📖 Documentation
+
+- **[WORKFLOW.md](./WORKFLOW.md)** - Complete Supabase-only development workflow guide
+- **[SUPABASE_SETUP.md](./SUPABASE_SETUP.md)** - Detailed setup and configuration guide
+- **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)** - Common issues and solutions
+- **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** - Implementation details
 
 ## 🎓 Learning Resources
 
