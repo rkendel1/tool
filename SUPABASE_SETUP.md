@@ -1,6 +1,6 @@
 # Supabase Setup Guide
 
-> **Note:** Some advanced services (Auth, Storage) may require additional database schemas to run fully. See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for details. The core database, API, and edge functions work out of the box.
+> **Architecture Note:** This setup uses a **Supabase-only database architecture**. All services (Auth, Storage, Realtime, etc.) connect to a single Supabase PostgreSQL database using separate schemas. There is no standalone PostgreSQL instance.
 
 This guide will help you set up and use Supabase in your local development environment and prepare for production deployment.
 
@@ -20,17 +20,21 @@ This guide will help you set up and use Supabase in your local development envir
 
 ## Overview
 
-This Docker Compose setup provides a complete local Supabase stack including:
+This Docker Compose setup provides a complete **Supabase-only stack** with all services connecting to a single Supabase PostgreSQL database:
 
-- **Supabase Database** - PostgreSQL 15 with Supabase extensions and optimizations
-- **Auth Service (GoTrue)** for user authentication
-- **Storage Service** for file uploads and management
-- **Realtime Service** for WebSocket subscriptions
-- **Edge Functions** for serverless functions (Deno-based)
-- **Kong API Gateway** for routing and API management
-- **Supabase Studio** for database management UI
-- **PostgREST** for automatic REST API generation
-- **Redis** for caching and session management
+- **Supabase Database** - PostgreSQL 15 with Supabase extensions (single database for all services)
+  - `public` schema - Your application data
+  - `auth` schema - Authentication data (users, sessions, etc.)
+  - `storage` schema - File storage metadata
+  - `_realtime` schema - Realtime subscriptions
+- **Auth Service (GoTrue)** - User authentication using `auth` schema
+- **Storage Service** - File uploads and management using `storage` schema
+- **Realtime Service** - WebSocket subscriptions using `_realtime` schema
+- **Edge Functions** - Serverless functions (Deno-based)
+- **Kong API Gateway** - Routing and API management
+- **Supabase Studio** - Database management UI
+- **PostgREST** - Automatic REST API generation from `public` schema
+- **Redis** - Caching and session management
 
 ## Prerequisites
 
@@ -134,7 +138,7 @@ Routes all API requests to the appropriate Supabase services.
 
 ### Supabase Database (Port 54321)
 
-PostgreSQL 15 with Supabase extensions and optimizations. This is the primary database for all Supabase services and your application data.
+PostgreSQL 15 with Supabase extensions and optimizations. This is the **single database instance** for all Supabase services and your application data.
 
 - **Host:** localhost
 - **Port:** 54321 (exposed on host port 54321 to avoid conflicts with existing PostgreSQL installations)
@@ -147,11 +151,22 @@ PostgreSQL 15 with Supabase extensions and optimizations. This is the primary da
 postgresql://postgres:your-password@localhost:54321/postgres
 ```
 
-**Note:** This is a Supabase-optimized PostgreSQL database, not a standalone PostgreSQL instance. It includes Supabase-specific extensions, schemas, and configurations required for Auth, Storage, Realtime, and other Supabase services.
+**Database Schemas:**
+- `public` - Your application tables and data
+- `auth` - Authentication data (users, sessions, tokens, etc.)
+- `storage` - Storage metadata (buckets, objects)
+- `_realtime` - Realtime publication configuration
+- `extensions` - PostgreSQL extensions
+
+**Important:** This is a **Supabase-optimized PostgreSQL database**, not a standalone PostgreSQL instance. All Supabase services (Auth, Storage, Realtime, etc.) connect to this same database using different schemas. This architecture:
+- Ensures consistency across all services
+- Simplifies deployment and management
+- Matches production Supabase architecture
+- Eliminates need for multiple database instances
 
 ### Auth Service (GoTrue)
 
-Handles user authentication and authorization.
+Handles user authentication and authorization using the `auth` schema in the Supabase database.
 
 - **Features:**
   - Email/password authentication
@@ -159,16 +174,18 @@ Handles user authentication and authorization.
   - Magic links
   - JWT token management
   - Row Level Security (RLS) integration
+- **Database Schema:** `auth` (automatically created on first startup)
 
 ### Storage Service
 
-Object storage for files and media.
+Object storage for files and media using the `storage` schema in the Supabase database.
 
 - **Features:**
   - File uploads/downloads
   - Image transformations
   - Access control via RLS
   - CDN-ready
+- **Database Schema:** `storage` (automatically created on first startup)
 
 ### Realtime Service
 

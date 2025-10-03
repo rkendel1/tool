@@ -281,6 +281,8 @@ services:
       - ./volumes/db/realtime.sql:/docker-entrypoint-initdb.d/02-realtime.sql:Z
       - ./volumes/db/99-create-users.sh:/docker-entrypoint-initdb.d/03-create-users.sh:Z
       - ./volumes/db/jwt.sql:/docker-entrypoint-initdb.d/04-jwt.sql:Z
+      - ./volumes/db/05-auth-schema.sql:/docker-entrypoint-initdb.d/05-auth-schema.sql:Z
+      - ./volumes/db/06-storage-schema.sql:/docker-entrypoint-initdb.d/06-storage-schema.sql:Z
       - db-data:/var/lib/postgresql/data:Z
       - ./volumes/db/postgresql.conf:/etc/postgresql/postgresql.conf
     networks:
