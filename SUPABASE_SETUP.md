@@ -1,5 +1,7 @@
 # Supabase Setup Guide
 
+> **Note:** Some advanced services (Auth, Storage) may require additional database schemas to run fully. See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for details. The core database, API, and edge functions work out of the box.
+
 This guide will help you set up and use Supabase in your local development environment and prepare for production deployment.
 
 ## Table of Contents
